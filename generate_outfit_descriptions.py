@@ -52,19 +52,21 @@ def generate_outfit_descriptions(folder_path, output_path):
     analysis_prompt = """Analyze this outfit image in detail and provide structured information about the clothing item/outfit shown. 
     
     Please identify and describe:
-    1. Category (e.g., Outerwear, Top, Bottom, Dress, Accessories, Footwear)
-    2. Subcategory (e.g., Overcoat, T-shirt, Jeans, Sneakers)
-    3. Primary color
-    4. Secondary colors (if any)
-    5. Pattern (Solid, Striped, Plaid, Floral, etc.)
-    6. Material/Fabric type (Cotton, Wool, Silk, Leather, etc.)
-    7. Sleeve length (for tops/outerwear)
-    8. Overall length/fit
-    9. Style aesthetic (Business Casual, Streetwear, Minimalist, Vintage, etc.)
-    10. Fit/Silhouette (Fitted, Relaxed, Oversized, etc.)
-    11. A complete 2-3 sentence description of the outfit
+    1. Type (Upper for tops/shirts/jackets, Lower for pants/skirts/shorts, Dress for one-piece outfits/dresses)
+    2. Category (e.g., Outerwear, Top, Bottom, Dress, Accessories, Footwear)
+    3. Subcategory (e.g., Overcoat, T-shirt, Jeans, Sneakers)
+    4. Primary color
+    5. Secondary colors (if any)
+    6. Pattern (Solid, Striped, Plaid, Floral, etc.)
+    7. Material/Fabric type (Cotton, Wool, Silk, Leather, etc.)
+    8. Sleeve length (for tops/outerwear)
+    9. Overall length/fit
+    10. Style aesthetic (Business Casual, Streetwear, Minimalist, Vintage, etc.)
+    11. Fit/Silhouette (Fitted, Relaxed, Oversized, etc.)
+    12. A complete 2-3 sentence description of the outfit
     
     Format your response as follows:
+    TYPE: [Upper/Lower/Dress]
     CATEGORY: [category]
     SUBCATEGORY: [subcategory]
     COLOR_PRIMARY: [primary color]
@@ -114,6 +116,7 @@ def generate_outfit_descriptions(folder_path, output_path):
             print(f"Error processing {image_path.name}: {e}")
             # Add error entry
             outfit_descriptions[image_path.name] = {
+                "type": "Unknown",
                 "category": "Unknown",
                 "subcategory": "Unknown",
                 "color_primary": "Unknown",
@@ -143,13 +146,13 @@ def generate_outfit_descriptions(folder_path, output_path):
         print(f"  Color: {data.get('color_primary', 'Unknown')}")
         print(f"  Style: {data.get('style_aesthetic', 'Unknown')}")
 
-
 def parse_outfit_response(response):
     """
     Parse the LLaVA response into structured outfit data.
     """
     lines = response.split('\n')
     outfit_data = {
+        "type": "Unknown",
         "category": "Unknown",
         "subcategory": "Unknown",
         "color_primary": "Unknown",
@@ -171,7 +174,9 @@ def parse_outfit_response(response):
             value = value.strip()
             
             # Map to outfit data keys
-            if key == "CATEGORY":
+            if key == "TYPE":
+                outfit_data["type"] = value
+            elif key == "CATEGORY":
                 outfit_data["category"] = value
             elif key == "SUBCATEGORY":
                 outfit_data["subcategory"] = value
